@@ -6,6 +6,8 @@ import {
 } from './directives/sortable-header.directive';
 import { ChargeMapService } from "./services/charge-map.service";
 import { OpenMap } from "./models/openMap";
+import { catchError } from 'rxjs/operators';
+import { throwError } from 'rxjs/internal/observable/throwError';
 
 @Component({
   selector: 'app-root',
@@ -23,7 +25,13 @@ export class AppComponent {
   }
 
   ngOnInit() {
-    this.apiservice.getFrase().subscribe(datos => {
+    this.apiservice.getMaps()
+    .pipe(
+      catchError(() => {
+        return throwError(() => new Error('Error al conectar a la api'));
+      })
+    )
+    .subscribe(datos => {
 
       for (let i =0 ; i< datos.length ; i++){
         this.openMap = { id: "", estado: "", operador: "", nroConexiones: "" , coordenadas: "", pais: "" };
@@ -36,7 +44,8 @@ export class AppComponent {
         this.openMap.pais = datos[i].AddressInfo.Country.Title;
         this.openMaps.push(this.openMap);
       }
-    });
+    },
+  );
 
   }
 
